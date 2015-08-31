@@ -12,6 +12,8 @@ namespace ExcelParser
 {
     public interface IExcelParser
     {
+        IList<T> Parse<T>(System.IO.Stream stream)
+    where T : new();
         IList<T> Parse<T>(string fileName) where T : new();
     }
 }

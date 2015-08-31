@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using FluentAssertions;
 using System.Linq;
+using System.IO;
 
 namespace ExcelParser.Tests
 {
@@ -15,6 +16,22 @@ namespace ExcelParser.Tests
         {
             parser = new SimpleExcelParser();
             fileName = "..\\..\\..\\SimpleWorkbook.xlsx";
+        }
+
+        [TestMethod]
+        public void Parse_From_Stream()
+        {
+            using (var stream = new FileStream(fileName, FileMode.Open))
+            {
+                // Arrange
+
+
+                // Act
+                var results = parser.Parse<Person>(stream);
+
+                // Assert
+                results.Should().HaveCount(6);
+            }
         }
 
         [TestMethod]

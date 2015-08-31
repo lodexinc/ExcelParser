@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Humanizer;
+using System.IO;
 
 namespace ExcelParser
 {
@@ -14,35 +15,48 @@ namespace ExcelParser
         {
             using (var doc = SpreadsheetDocument.Open(fileName, false))
             {
-                var bookPart = doc.WorkbookPart;
-                var sheetPart = bookPart.WorksheetParts.First();
-                var sheetData = sheetPart.Worksheet.Elements<SheetData>().First();
-                var strings = bookPart.GetPartsOfType<SharedStringTablePart>().First().SharedStringTable;
-
-                var list = new List<T>();
-                var first = true;
-                var columns = new Dictionary<string, string>();
-
-                foreach (var row in sheetData.Elements<Row>())
-                {
-                    if (first)
-                    {
-                        first = false;
-                        ParseColumnNames(row, strings, columns);
-                    }
-                    else
-                    {
-                        list.Add(ParseObject<T>(row, strings, columns));
-                    }
-
-                }
-
-                return list;
+                return ProcessDocument<T>(doc);
             }
         }
 
-        private T ParseObject<T>(Row row, SharedStringTable strings, Dictionary<string, string> columns)
+        public IList<T> Parse<T>(Stream stream) where T : new()
+        {
+            using (var doc = SpreadsheetDocument.Open(stream, false))
+            {
+                return ProcessDocument<T>(doc);
+            }
+        }
+
+        private IList<T> ProcessDocument<T>(SpreadsheetDocument doc)
             where T : new()
+        {
+            var bookPart = doc.WorkbookPart;
+            var sheetPart = bookPart.WorksheetParts.First();
+            var sheetData = sheetPart.Worksheet.Elements<SheetData>().First();
+            var strings = bookPart.GetPartsOfType<SharedStringTablePart>().First().SharedStringTable;
+
+            var list = new List<T>();
+            var first = true;
+            var columns = new Dictionary<string, string>();
+
+            foreach (var row in sheetData.Elements<Row>())
+            {
+                if (first)
+                {
+                    first = false;
+                    ParseColumnNames(row, strings, columns);
+                }
+                else
+                {
+                    list.Add(ParseObject<T>(row, strings, columns));
+                }
+
+            }
+
+            return list;
+        }
+        private T ParseObject<T>(Row row, SharedStringTable strings, Dictionary<string, string> columns)
+                    where T : new()
         {
             var obj = new T();
 
