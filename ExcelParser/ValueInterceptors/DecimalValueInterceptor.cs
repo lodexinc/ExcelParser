@@ -21,13 +21,13 @@ namespace ExcelParser
             if (property.PropertyType == typeof(decimal))
             {
                 if (currentValue != null)
-                    return decimal.Parse(originalValue);
+                    return decimal.Parse(originalValue, System.Globalization.NumberStyles.Float);
                 else return currentValue;
             }
             else if (property.PropertyType == typeof(decimal?))
             {
                 if (currentValue == null) return default(decimal?);
-                else return new decimal?(decimal.Parse(originalValue));
+                else return new decimal?(decimal.Parse(originalValue, System.Globalization.NumberStyles.Float));
             }
             else return currentValue;
         }
