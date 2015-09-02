@@ -132,10 +132,10 @@ namespace ExcelParser
 
         private string GetValueAsString(Cell cell, SharedStringTable strings)
         {
-            var cv = cell.CellValue.Text;
+            var cv = cell?.CellValue?.Text;
             var dataType = cell.DataType?.Value;
 
-            if (dataType.HasValue == false) return cv;
+            if (cv == null || dataType.HasValue == false) return cv;
 
             switch (dataType.Value)
             {
