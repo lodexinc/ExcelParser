@@ -5,8 +5,8 @@ using FluentAssertions;
 
 namespace ExcelParser.Tests
 {
-        [TestClass]
-    public class SimpleExcelParser_DataTypesWorkbookTests
+    [TestClass]
+    public class SimpleExcelParser_NullableDataTypesWorkbookTests
     {
         SimpleExcelParser parser;
         string fileName;
@@ -14,7 +14,7 @@ namespace ExcelParser.Tests
         public void Setup()
         {
             parser = new SimpleExcelParser();
-            fileName = "..\\..\\..\\DataTypesWorkbook.xlsx";
+            fileName = "..\\..\\..\\NullableDataTypesWorkbook.xlsx";
         }
 
         [TestMethod]
@@ -50,14 +50,34 @@ namespace ExcelParser.Tests
             christmas.UniqueId.Should().Be("A23B58EC-8BB3-413F-BBBE-CCE71E470594");
         }
 
+
+        [TestMethod]
+        public void Parse_Should_Return_NULLs_For_Second_Object()
+        {
+            // Arrange
+
+
+            // Act
+            var results = parser.Parse<Holiday>(fileName);
+
+            // Assert
+            var obj = results.Skip(1).First();
+            obj.Name.Should().BeNull();
+            obj.NumberOfDays.Should().NotHaveValue();
+            obj.StartDate.Should().NotHaveValue();
+            obj.OvertimeRate.Should().NotHaveValue();
+            obj.SalaryBonus.Should().NotHaveValue();
+            obj.UniqueId.Should().NotHaveValue();
+        }
+
         public class Holiday
         {
             public string Name { get; set; }
-            public int NumberOfDays { get; set; }
-            public DateTime StartDate { get; set; }
-            public Decimal OvertimeRate { get; set; }
-            public Double SalaryBonus { get; set; }
-            public Guid UniqueId { get; set; }
+            public int? NumberOfDays { get; set; }
+            public DateTime? StartDate { get; set; }
+            public Decimal? OvertimeRate { get; set; }
+            public Double? SalaryBonus { get; set; }
+            public Guid? UniqueId { get; set; }
         }
     }
 }

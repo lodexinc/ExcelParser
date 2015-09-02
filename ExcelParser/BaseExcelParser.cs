@@ -11,6 +11,19 @@ namespace ExcelParser
 {
     public abstract class BaseExcelParser : IExcelParser
     {
+        public List<INameInterceptor> NameInterceptors { get; } = new List<INameInterceptor>();
+        public List<IValueInterceptor> ValueInterceptors { get; } = new List<IValueInterceptor>();
+        protected IOrderedEnumerable<INameInterceptor> OrderedNameInterceptors =>
+            NameInterceptors.OrderBy(e => e.Order);
+        protected IOrderedEnumerable<IValueInterceptor> OrderedValueInterceptors =>
+            ValueInterceptors.OrderBy(e => e.Order);
+
+        public BaseExcelParser(IEnumerable<INameInterceptor> nameInterceptors, IEnumerable<IValueInterceptor> valueInterceptors)
+        {
+            this.NameInterceptors.AddRange(nameInterceptors);
+            this.ValueInterceptors.AddRange(valueInterceptors);
+        }
+
         public IList<T> Parse<T>(string fileName) where T : new()
         {
             using (var doc = SpreadsheetDocument.Open(fileName, false))
@@ -63,29 +76,17 @@ namespace ExcelParser
             foreach (var cell in row.Elements<Cell>())
             {
                 var column = columns[GetColumnFromCell(cell)];
-                var cellValueString = GetValueAsString(cell, strings);
+                var originalValue = GetValueAsString(cell, strings);
                 var property = typeof(T).GetProperty(column);
 
-                object setValue = cellValueString;
+                object currentValue = originalValue;
 
-                if (property.PropertyType == typeof(int))
+                foreach (var interceptor in OrderedValueInterceptors)
                 {
-                    setValue = int.Parse(cellValueString);
-                }
-                else if (property.PropertyType == typeof(double))
-                {
-                    setValue = double.Parse(cellValueString);
-                }
-                else if (property.PropertyType == typeof(decimal))
-                {
-                    setValue = decimal.Parse(cellValueString);
-                }
-                else if (property.PropertyType == typeof(DateTime))
-                {
-                    setValue = DateTime.FromOADate(double.Parse(cellValueString));
+                    currentValue = interceptor.Intercept(property, originalValue, currentValue);
                 }
 
-                property.SetValue(obj, setValue);
+                property.SetValue(obj, currentValue);
             }
 
             return obj;
@@ -95,9 +96,17 @@ namespace ExcelParser
         {
             foreach (var cell in row.Elements<Cell>())
             {
+                string columnIdentifier = GetColumnFromCell(cell);
+                string columnName = GetValueAsString(cell, strings);
+
+                foreach (var interceptor in OrderedNameInterceptors)
+                {
+                    columnName = interceptor.Intercept(columnName);
+                }
+
                 columns.Add(
-                    GetColumnFromCell(cell),
-                    GetValueAsString(cell, strings).Dehumanize()
+                    columnIdentifier,
+                    columnName
                 );
             }
         }

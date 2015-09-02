@@ -50,9 +50,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseExcelParser.cs" />
+    <Compile Include="BaseInterceptor.cs" />
+    <Compile Include="NameInterceptors\DehumanizeNameInterceptor.cs" />
     <Compile Include="IExcelParser.cs" />
+    <Compile Include="IInterceptor.cs" />
+    <Compile Include="NameInterceptors\INameInterceptor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleExcelParser.cs" />
+    <Compile Include="ValueInterceptors\DateTimeValueInterceptor.cs" />
+    <Compile Include="ValueInterceptors\DecimalValueInterceptor.cs" />
+    <Compile Include="ValueInterceptors\DoubleValueInterceptor.cs" />
+    <Compile Include="ValueInterceptors\GuidValueInterceptor.cs" />
+    <Compile Include="ValueInterceptors\IntValueInterceptor.cs" />
+    <Compile Include="ValueInterceptors\IValueInterceptor.cs" />
+    <Compile Include="ValueInterceptors\StringToNullValueInterceptor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

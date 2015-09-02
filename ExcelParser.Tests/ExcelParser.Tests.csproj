@@ -64,8 +64,10 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="DehumanizeNameInterceptor_Tests.cs" />
     <Compile Include="SimpleExcelParser_DataTypesWorkbookTests.cs" />
     <Compile Include="SimpleExcelParser_HumanizerWorkbookTests.cs" />
+    <Compile Include="SimpleExcelParser_NullableDataTypesWorkbookTests.cs" />
     <Compile Include="SimpleExcelParser_SimpleWorkbookTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
