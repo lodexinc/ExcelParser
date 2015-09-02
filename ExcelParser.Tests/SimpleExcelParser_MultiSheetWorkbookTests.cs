@@ -6,7 +6,7 @@ using FluentAssertions;
 namespace ExcelParser.Tests
 {
     [TestClass]
-    public class SimpleExcelParser_DataTypesWorkbookTests
+    public class SimpleExcelParser_MultiSheetWorkbookTests
     {
         SimpleExcelParser parser;
         string fileName;
@@ -14,40 +14,40 @@ namespace ExcelParser.Tests
         public void Setup()
         {
             parser = new SimpleExcelParser();
-            fileName = "..\\..\\..\\DataTypesWorkbook.xlsx";
+            fileName = "..\\..\\..\\MultiSheetWorkbook.xlsx";
         }
 
         [TestMethod]
-        public void Parse_Should_Return_Two_Objects()
+        public void Parse_Should_Return_One_Objects()
         {
             // Arrange
 
 
             // Act
-            var results = parser.Parse<Holiday>(fileName);
+            var results = parser.Parse<Holiday>(fileName, "Sheet2");
 
             // Assert
-            results.Should().HaveCount(2);
+            results.Should().HaveCount(1);
         }
 
 
         [TestMethod]
-        public void Parse_Should_Return_Christmas_As_First_Object()
+        public void Parse_Should_Return_Easter_As_First_Object()
         {
             // Arrange
 
 
             // Act
-            var results = parser.Parse<Holiday>(fileName);
+            var results = parser.Parse<Holiday>(fileName, "Sheet2");
 
             // Assert
             var christmas = results.First();
-            christmas.Name.Should().Be("Christmas");
-            christmas.NumberOfDays.Should().Be(2);
-            christmas.StartDate.Should().Be(new DateTime(2015, 12, 25));
+            christmas.Name.Should().Be("Easter");
+            christmas.NumberOfDays.Should().Be(1);
+            christmas.StartDate.Should().Be(new DateTime(2015, 1, 1));
             christmas.OvertimeRate.Should().Be(150m);
-            christmas.SalaryBonus.Should().BeApproximately(0.007692308d, 0.000000001d);
-            christmas.UniqueId.Should().Be("A23B58EC-8BB3-413F-BBBE-CCE71E470594");
+            christmas.SalaryBonus.Should().BeApproximately(0.003846154d, 0.000000001d);
+            christmas.UniqueId.Should().Be("AAAAAAAA-8BB3-413F-BBBE-CCE71E470594");
         }
 
         public class Holiday

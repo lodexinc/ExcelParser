@@ -24,27 +24,39 @@ namespace ExcelParser
             this.ValueInterceptors.AddRange(valueInterceptors);
         }
 
-        public IList<T> Parse<T>(string fileName) where T : new()
+        public IList<T> Parse<T>(string fileName, string sheetName = null) where T : new()
         {
             using (var doc = SpreadsheetDocument.Open(fileName, false))
             {
-                return ProcessDocument<T>(doc);
+                return ProcessDocument<T>(doc, sheetName);
             }
         }
 
-        public IList<T> Parse<T>(Stream stream) where T : new()
+        public IList<T> Parse<T>(Stream stream, string sheetName = null) where T : new()
         {
             using (var doc = SpreadsheetDocument.Open(stream, false))
             {
-                return ProcessDocument<T>(doc);
+                return ProcessDocument<T>(doc, sheetName);
             }
         }
 
-        private IList<T> ProcessDocument<T>(SpreadsheetDocument doc)
+        private IList<T> ProcessDocument<T>(SpreadsheetDocument doc, string sheetName)
             where T : new()
         {
             var bookPart = doc.WorkbookPart;
-            var sheetPart = bookPart.WorksheetParts.First();
+            WorksheetPart sheetPart;
+
+            if (sheetName == null)
+                sheetPart = bookPart.WorksheetParts.First();
+            else
+            {
+                var sheet = bookPart.Workbook.Descendants<Sheet>().ToList()
+                    .First(e => e.Name == sheetName);
+
+                sheetPart = bookPart.GetPartById(sheet.Id) as WorksheetPart;
+            }
+
+
             var sheetData = sheetPart.Worksheet.Elements<SheetData>().First();
             var strings = bookPart.GetPartsOfType<SharedStringTablePart>().First().SharedStringTable;
 

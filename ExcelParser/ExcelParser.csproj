@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="BaseExcelParser.cs" />
     <Compile Include="BaseInterceptor.cs" />
+    <Compile Include="NameInterceptors\AliasNameInterceptor.cs" />
     <Compile Include="NameInterceptors\DehumanizeNameInterceptor.cs" />
     <Compile Include="IExcelParser.cs" />
     <Compile Include="IInterceptor.cs" />
