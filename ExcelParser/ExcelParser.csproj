@@ -58,6 +58,7 @@
     <Compile Include="NameInterceptors\INameInterceptor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleExcelParser.cs" />
+    <Compile Include="TypeNameExtensions.cs" />
     <Compile Include="ValueInterceptors\DateTimeValueInterceptor.cs" />
     <Compile Include="ValueInterceptors\DecimalValueInterceptor.cs" />
     <Compile Include="ValueInterceptors\DoubleValueInterceptor.cs" />

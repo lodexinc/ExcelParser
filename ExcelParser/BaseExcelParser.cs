@@ -24,7 +24,7 @@ namespace ExcelParser
             this.ValueInterceptors.AddRange(valueInterceptors);
         }
 
-        public IList<T> Parse<T>(string fileName, string sheetName = null) where T : new()
+        public IList<T> Parse<T>(string fileName, string sheetName = null) where T : class, new()
         {
             using (var doc = SpreadsheetDocument.Open(fileName, false))
             {
@@ -32,7 +32,7 @@ namespace ExcelParser
             }
         }
 
-        public IList<T> Parse<T>(Stream stream, string sheetName = null) where T : new()
+        public IList<T> Parse<T>(Stream stream, string sheetName = null) where T : class, new()
         {
             using (var doc = SpreadsheetDocument.Open(stream, false))
             {
@@ -41,7 +41,7 @@ namespace ExcelParser
         }
 
         private IList<T> ProcessDocument<T>(SpreadsheetDocument doc, string sheetName)
-            where T : new()
+            where T : class, new()
         {
             var bookPart = doc.WorkbookPart;
             WorksheetPart sheetPart;
@@ -73,7 +73,16 @@ namespace ExcelParser
                 }
                 else
                 {
-                    list.Add(ParseObject<T>(row, strings, columns));
+                    try
+                    {
+                        T obj = ParseObject<T>(row, strings, columns);
+                        if (obj != null)
+                            list.Add(obj);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception($"Error on row {row.RowIndex}", ex);
+                    }
                 }
 
             }
@@ -81,27 +90,59 @@ namespace ExcelParser
             return list;
         }
         private T ParseObject<T>(Row row, SharedStringTable strings, Dictionary<string, string> columns)
-                    where T : new()
+                    where T : class, new()
         {
             var obj = new T();
+            var anyDataSet = false;
 
             foreach (var cell in row.Elements<Cell>())
             {
-                var column = columns[GetColumnFromCell(cell)];
+                string key = GetColumnFromCell(cell);
+                if (columns.ContainsKey(key) == false) continue;
+
+                var column = columns[key];
                 var originalValue = GetValueAsString(cell, strings);
                 var property = typeof(T).GetProperty(column);
 
-                object currentValue = originalValue;
+                if (property == null)
+                    throw new Exception($"Unable to find property to match column {key} for which we expect property name {column}.");
 
-                foreach (var interceptor in OrderedValueInterceptors)
+                try
                 {
-                    currentValue = interceptor.Intercept(property, originalValue, currentValue);
-                }
+                    object currentValue = originalValue;
 
-                property.SetValue(obj, currentValue);
+                    foreach (var interceptor in OrderedValueInterceptors)
+                    {
+                        try
+                        {
+                            currentValue = interceptor.Intercept(property, originalValue, currentValue);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception($"Error in Interceptor {interceptor.GetType().Name} with currentValue <\"{currentValue}\"> and originalValue <\"{originalValue}\">", ex);
+                        }
+                    }
+
+                    property.SetValue(obj, currentValue);
+                    if (currentValue != null && GetDefaultValue(property.PropertyType) != currentValue)
+                        anyDataSet |= true;
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception($"Error working with column {key} targetting property {column} with type of {property.PropertyType.GetFriendlyName()}", ex);
+                }
             }
 
-            return obj;
+            if (anyDataSet)
+                return obj;
+            else return (T)null;
+        }
+
+        private object GetDefaultValue(Type t)
+        {
+            if (t.IsValueType)
+                return Activator.CreateInstance(t);
+            return null;
         }
 
         private void ParseColumnNames(Row row, SharedStringTable strings, Dictionary<string, string> columns)
